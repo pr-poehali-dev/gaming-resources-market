@@ -3,6 +3,7 @@ import func2url from "../backend/func2url.json";
 const AUTH = func2url.auth;
 const BALANCE = func2url.balance;
 const CASES = func2url.cases;
+const CUBE = func2url.cube;
 
 function getSessionId(): string {
   return localStorage.getItem("pd_session") || "";
@@ -120,4 +121,13 @@ export async function getSpins() {
 
 export async function verifyFairness(server_seed: string, client_seed: string, nonce: number, total_weight: number) {
   return req(`${CASES}/?action=verify`, "POST", { server_seed, client_seed, nonce, total_weight });
+}
+
+/* Cube */
+export async function cubeRoll(bet: number) {
+  return req(`${CUBE}/?action=roll`, "POST", { bet });
+}
+
+export async function cubeHistory() {
+  return req(`${CUBE}/?action=history`);
 }

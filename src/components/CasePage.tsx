@@ -200,8 +200,6 @@ export default function CasePage({ user, onAuthRequired, onBalanceUpdate }: Prop
     </div>
   );
 
-  const totalWeight = selectedCase.prizes.reduce((s, p) => s + p.weight, 0);
-
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#0D0D0D" }}>
       <div className="max-w-5xl mx-auto px-5 py-16">
@@ -399,9 +397,7 @@ export default function CasePage({ user, onAuthRequired, onBalanceUpdate }: Prop
             Содержимое кейса
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            {[...selectedCase.prizes].sort((a, b) => b.weight - a.weight).map(p => {
-              const pct = ((p.weight / totalWeight) * 100).toFixed(1);
-              return (
+            {[...selectedCase.prizes].sort((a, b) => b.weight - a.weight).map(p => (
                 <div key={p.id} className="flex flex-col items-center p-4 rounded-sm text-center"
                   style={{
                     backgroundColor: "#111",
@@ -412,15 +408,11 @@ export default function CasePage({ user, onAuthRequired, onBalanceUpdate }: Prop
                   <div className="font-oswald font-bold uppercase leading-tight mb-1" style={{ fontSize: "0.75rem", color: RARITY_COLOR[p.rarity] }}>
                     {p.name}
                   </div>
-                  <div className="font-mono text-xs mb-1" style={{ color: "#555" }}>
+                  <div className="font-mono text-xs" style={{ color: "#555" }}>
                     {RARITY_LABEL[p.rarity]}
                   </div>
-                  <div className="font-oswald font-bold" style={{ fontSize: "1rem", color: "#F97316" }}>
-                    {pct}%
-                  </div>
                 </div>
-              );
-            })}
+            ))}
           </div>
         </div>
 

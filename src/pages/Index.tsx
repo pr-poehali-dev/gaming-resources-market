@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import AuthModal, { type User } from "@/components/AuthModal";
 import CasePage from "@/components/CasePage";
+import CubePage from "@/components/CubePage";
 import Cabinet from "@/components/Cabinet";
 import AdminPanel from "@/components/AdminPanel";
 import { getMe } from "@/api";
@@ -80,7 +81,7 @@ const FAQ_ITEMS = [
   { q: "Где посмотреть отзывы?", a: "Все отзывы собраны в нашем Telegram-канале. Ссылка есть в разделе Контакты." },
 ];
 
-type Page = "home" | "catalog" | "cases" | "how" | "faq" | "contacts" | "cabinet" | "admin";
+type Page = "home" | "catalog" | "cases" | "cube" | "how" | "faq" | "contacts" | "cabinet" | "admin";
 
 function useInView(threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
@@ -159,6 +160,11 @@ export default function Index() {
               style={{ color: page === "cases" ? "#0D0D0D" : "#F59E0B", backgroundColor: page === "cases" ? "#F59E0B" : "#F59E0B22", border: "1px solid #F59E0B" }}>
               🎰 Кейсы
             </button>
+            <button onClick={() => nav("cube")}
+              className="font-oswald text-xs tracking-widest uppercase px-3 py-1.5 rounded-sm transition-all"
+              style={{ color: page === "cube" ? "#0D0D0D" : "#A855F7", backgroundColor: page === "cube" ? "#A855F7" : "#A855F722", border: "1px solid #A855F7" }}>
+              🎲 Кубик
+            </button>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -195,6 +201,9 @@ export default function Index() {
             ))}
             <button onClick={() => nav("cases")} className="font-oswald text-left text-sm tracking-widest uppercase" style={{ color: "#F59E0B" }}>
               🎰 Кейсы
+            </button>
+            <button onClick={() => nav("cube")} className="font-oswald text-left text-sm tracking-widest uppercase" style={{ color: "#A855F7" }}>
+              🎲 Кубик Рубика
             </button>
             {user ? (
               <button onClick={() => nav(user.is_admin ? "admin" : "cabinet")} className="font-oswald text-left text-sm tracking-widest uppercase" style={{ color: "#F97316" }}>
@@ -274,6 +283,13 @@ export default function Index() {
         {page === "catalog"  && <CatalogPage onAdd={addToCart} onBuy={buyNow} />}
         {page === "cases"    && (
           <CasePage
+            user={user}
+            onAuthRequired={() => setShowAuth(true)}
+            onBalanceUpdate={b => setUser(u => u ? { ...u, balance: b } : u)}
+          />
+        )}
+        {page === "cube"     && (
+          <CubePage
             user={user}
             onAuthRequired={() => setShowAuth(true)}
             onBalanceUpdate={b => setUser(u => u ? { ...u, balance: b } : u)}
