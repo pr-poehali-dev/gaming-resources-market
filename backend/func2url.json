@@ -1,0 +1,6 @@
+{
+  "admin-setup": "https://functions.poehali.dev/e4b91224-b514-423b-9b55-c0ad734bc82c",
+  "auth": "https://functions.poehali.dev/c1338703-f6f6-4950-b52f-ac2f50fd1b76",
+  "cases": "https://functions.poehali.dev/6bb9b4b1-39e4-4b0a-9f59-2c3fc13e15f8",
+  "balance": "https://functions.poehali.dev/4416a8f0-0a0e-45c5-8aa2-28f9876b9662"
+}
