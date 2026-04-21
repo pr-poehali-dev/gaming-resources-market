@@ -68,6 +68,16 @@ def handler(event: dict, context) -> dict:
 
     path = event.get('path', '/')
     method = event.get('httpMethod', 'GET')
+    # Платформа обрезает sub-path — читаем action из query или path
+    qs = event.get('queryStringParameters') or {}
+    action = qs.get('action', '')
+    # Восстанавливаем маршрут: либо из path, либо из ?action=
+    if not action:
+        # path всегда '/', берём из последнего сегмента оригинального пути
+        raw = event.get('headers', {}).get('X-Original-Uri', path)
+        if raw and raw != '/':
+            action = raw.strip('/').split('/')[-1]
+    print(f"[cases] method={method} path={repr(path)} action={repr(action)}")
     session_id = get_session_id(event)
     body = {}
     if event.get('body'):
@@ -80,8 +90,8 @@ def handler(event: dict, context) -> dict:
     try:
         user = get_session_user(conn, session_id) if session_id else None
 
-        # GET /cases — список активных кейсов с призами
-        if method == 'GET' and path.endswith('/cases'):
+        # GET ?action=cases — список активных кейсов с призами
+        if method == 'GET' and (action == 'cases' or path.endswith('/cases')):
             with conn.cursor() as cur:
                 cur.execute("SELECT id, name, price, image_url FROM pd_cases WHERE is_active=TRUE ORDER BY id")
                 cases = cur.fetchall()
@@ -95,8 +105,8 @@ def handler(event: dict, context) -> dict:
                     result.append({'id': c[0], 'name': c[1], 'price': float(c[2]), 'image_url': c[3], 'prizes': prizes})
             return ok({'cases': result})
 
-        # POST /spin — прокрутить кейс
-        if method == 'POST' and path.endswith('/spin'):
+        # POST ?action=spin — прокрутить кейс
+        if method == 'POST' and (action == 'spin' or path.endswith('/spin')):
             if not user:
                 return err('Not authorized', 401)
             user_id, username, is_admin, balance = user
@@ -183,8 +193,8 @@ def handler(event: dict, context) -> dict:
                 'tg_admin': TG_ADMIN,
             })
 
-        # GET /spins — история выигрышей пользователя
-        if method == 'GET' and path.endswith('/spins'):
+        # GET ?action=spins — история выигрышей пользователя
+        if method == 'GET' and (action == 'spins' or path.endswith('/spins')):
             if not user:
                 return err('Not authorized', 401)
             with conn.cursor() as cur:
@@ -206,8 +216,8 @@ def handler(event: dict, context) -> dict:
 
         # === ADMIN ===
 
-        # GET /admin/spins — все выигрыши для проверки
-        if method == 'GET' and path.endswith('/admin/spins'):
+        # GET ?action=admin_spins — все выигрыши для проверки
+        if method == 'GET' and (action == 'admin_spins' or path.endswith('/admin/spins')):
             if not user or not user[2]:
                 return err('Forbidden', 403)
             with conn.cursor() as cur:
@@ -229,8 +239,8 @@ def handler(event: dict, context) -> dict:
                 for r in rows
             ]})
 
-        # POST /admin/claim — отметить приз выданным
-        if method == 'POST' and path.endswith('/admin/claim'):
+        # POST ?action=admin_claim — отметить приз выданным
+        if method == 'POST' and (action == 'admin_claim' or path.endswith('/admin/claim')):
             if not user or not user[2]:
                 return err('Forbidden', 403)
             spin_id = body.get('spin_id')
@@ -245,8 +255,8 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             return ok({'ok': True})
 
-        # POST /verify — публичная проверка честности спина
-        if method == 'POST' and path.endswith('/verify'):
+        # POST ?action=verify — публичная проверка честности спина
+        if method == 'POST' and (action == 'verify' or path.endswith('/verify')):
             server_seed = body.get('server_seed', '')
             client_seed = body.get('client_seed', '')
             nonce = int(body.get('nonce', 0))

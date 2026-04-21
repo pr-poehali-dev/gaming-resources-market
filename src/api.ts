@@ -51,73 +51,73 @@ async function authRequest(url: string, body: unknown) {
 
 /* Auth */
 export async function login(email: string, password: string) {
-  return authRequest(`${AUTH}/login`, { email, password });
+  return authRequest(`${AUTH}/?action=login`, { email, password });
 }
 
 export async function registerUser(username: string, email: string, password: string) {
-  return authRequest(`${AUTH}/register`, { username, email, password });
+  return authRequest(`${AUTH}/?action=register`, { username, email, password });
 }
 
 export async function getMe() {
-  return req(`${AUTH}/me`);
+  return req(`${AUTH}/?action=me`);
 }
 
 export async function logout() {
-  await req(`${AUTH}/logout`, "POST");
+  await req(`${AUTH}/?action=logout`, "POST");
   clearSession();
 }
 
 /* Balance */
 export async function getBalance() {
-  return req(`${BALANCE}/balance`);
+  return req(`${BALANCE}/?action=balance`);
 }
 
 export async function createDeposit(amount: number) {
-  return req(`${BALANCE}/deposit`, "POST", { amount });
+  return req(`${BALANCE}/?action=deposit`, "POST", { amount });
 }
 
 export async function getDeposits() {
-  return req(`${BALANCE}/deposits`);
+  return req(`${BALANCE}/?action=deposits`);
 }
 
 /* Admin */
 export async function adminGetDeposits() {
-  return req(`${BALANCE}/admin/deposits`);
+  return req(`${BALANCE}/?action=admin_deposits`);
 }
 
 export async function adminConfirmDeposit(deposit_id: number, action: "confirm" | "reject", reason?: string) {
-  return req(`${BALANCE}/admin/confirm`, "POST", { deposit_id, action, reason });
+  return req(`${BALANCE}/?action=admin_confirm`, "POST", { deposit_id, action, reason });
 }
 
 export async function adminGetUsers() {
-  return req(`${BALANCE}/admin/users`);
+  return req(`${BALANCE}/?action=admin_users`);
 }
 
 export async function adminAdjustBalance(user_id: number, delta: number, reason: string) {
-  return req(`${BALANCE}/admin/adjust`, "POST", { user_id, delta, reason });
+  return req(`${BALANCE}/?action=admin_adjust`, "POST", { user_id, delta, reason });
 }
 
 export async function adminGetSpins() {
-  return req(`${CASES}/admin/spins`);
+  return req(`${CASES}/?action=admin_spins`);
 }
 
 export async function adminClaimSpin(spin_id: number) {
-  return req(`${CASES}/admin/claim`, "POST", { spin_id });
+  return req(`${CASES}/?action=admin_claim`, "POST", { spin_id });
 }
 
 /* Cases */
 export async function getCases() {
-  return req(`${CASES}/cases`);
+  return req(`${CASES}/?action=cases`);
 }
 
 export async function spin(case_id: number, spin_count: number, client_seed?: string) {
-  return req(`${CASES}/spin`, "POST", { case_id, spin_count, client_seed });
+  return req(`${CASES}/?action=spin`, "POST", { case_id, spin_count, client_seed });
 }
 
 export async function getSpins() {
-  return req(`${CASES}/spins`);
+  return req(`${CASES}/?action=spins`);
 }
 
 export async function verifyFairness(server_seed: string, client_seed: string, nonce: number, total_weight: number) {
-  return req(`${CASES}/verify`, "POST", { server_seed, client_seed, nonce, total_weight });
+  return req(`${CASES}/?action=verify`, "POST", { server_seed, client_seed, nonce, total_weight });
 }

@@ -80,6 +80,7 @@ function buildStrip(winPrize: Prize, allPrizes: Prize[]): Prize[] {
 export default function CasePage({ user, onAuthRequired, onBalanceUpdate }: Props) {
   const [cases, setCases] = useState<Case[]>([]);
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
+  const [loadError, setLoadError] = useState("");
   const [spinCount, setSpinCount] = useState(1);
   const [spinning, setSpinning] = useState(false);
   const [results, setResults] = useState<SpinResult[]>([]);
@@ -92,10 +93,16 @@ export default function CasePage({ user, onAuthRequired, onBalanceUpdate }: Prop
   const animRef = useRef(false);
 
   useEffect(() => {
-    getCases().then(d => {
-      setCases(d.cases || []);
-      if (d.cases?.length) setSelectedCase(d.cases[0]);
-    }).catch(() => {});
+    getCases()
+      .then(d => {
+        const list: Case[] = d.cases || [];
+        setCases(list);
+        if (list.length > 0) setSelectedCase(list[0]);
+        else setLoadError("Кейсы не найдены");
+      })
+      .catch((e: unknown) => {
+        setLoadError(e instanceof Error ? e.message : "Не удалось загрузить кейсы");
+      });
   }, []);
 
   // Инициализируем ленту случайными призами при выборе кейса
@@ -174,9 +181,21 @@ export default function CasePage({ user, onAuthRequired, onBalanceUpdate }: Prop
 
   if (!selectedCase) return (
     <div className="flex items-center justify-center py-40">
-      <div className="flex flex-col items-center gap-4" style={{ color: "#444" }}>
-        <Icon name="Loader2" size={36} className="animate-spin" style={{ color: "#F97316" }} />
-        <div className="font-oswald text-sm uppercase tracking-widest">Загружаем кейсы...</div>
+      <div className="flex flex-col items-center gap-4">
+        {loadError ? (
+          <>
+            <Icon name="AlertCircle" size={36} style={{ color: "#DC2626" }} />
+            <div className="font-oswald text-base uppercase tracking-widest" style={{ color: "#DC2626" }}>{loadError}</div>
+            <button onClick={() => window.location.reload()} className="btn-orange px-6 py-2 rounded-sm text-sm mt-2">
+              Обновить страницу
+            </button>
+          </>
+        ) : (
+          <>
+            <Icon name="Loader2" size={36} className="animate-spin" style={{ color: "#F97316" }} />
+            <div className="font-oswald text-sm uppercase tracking-widest" style={{ color: "#555" }}>Загружаем кейсы...</div>
+          </>
+        )}
       </div>
     </div>
   );

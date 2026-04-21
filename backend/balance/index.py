@@ -52,6 +52,8 @@ def handler(event: dict, context) -> dict:
 
     path = event.get('path', '/')
     method = event.get('httpMethod', 'GET')
+    qs = event.get('queryStringParameters') or {}
+    route = qs.get('action', '') or path.strip('/').split('/')[-1]
     session_id = get_session_id(event)
     body = {}
     if event.get('body'):
@@ -64,14 +66,14 @@ def handler(event: dict, context) -> dict:
     try:
         user = get_session_user(conn, session_id) if session_id else None
 
-        # GET /balance — текущий баланс
-        if method == 'GET' and path.endswith('/balance'):
+        # GET ?action=balance
+        if method == 'GET' and (route == 'balance' or path.endswith('/balance')):
             if not user:
                 return err('Not authorized', 401)
             return ok({'balance': float(user[3] or 0), 'sber_card': SBER_CARD, 'tg_admin': TG_ADMIN})
 
-        # POST /deposit — создать заявку на пополнение
-        if method == 'POST' and path.endswith('/deposit'):
+        # POST ?action=deposit
+        if method == 'POST' and (route == 'deposit' or path.endswith('/deposit')):
             if not user:
                 return err('Not authorized', 401)
             amount = body.get('amount')
@@ -95,8 +97,8 @@ def handler(event: dict, context) -> dict:
                 'message': f'Переведи {amount:.0f} ₽ на карту СберБанк. После перевода напиши @Torgreal7 с номером заявки #{deposit_id}'
             })
 
-        # GET /deposits — история заявок пользователя
-        if method == 'GET' and path.endswith('/deposits'):
+        # GET ?action=deposits
+        if method == 'GET' and (route == 'deposits' or path.endswith('/deposits')):
             if not user:
                 return err('Not authorized', 401)
             with conn.cursor() as cur:
@@ -114,8 +116,8 @@ def handler(event: dict, context) -> dict:
 
         # === ADMIN ONLY ===
 
-        # GET /admin/deposits — все заявки (только для админа)
-        if method == 'GET' and path.endswith('/admin/deposits'):
+        # GET ?action=admin_deposits
+        if method == 'GET' and (route == 'admin_deposits' or path.endswith('/admin/deposits')):
             if not user or not user[2]:
                 return err('Forbidden', 403)
             with conn.cursor() as cur:
@@ -132,8 +134,8 @@ def handler(event: dict, context) -> dict:
                 for r in rows
             ]})
 
-        # POST /admin/confirm — подтвердить и зачислить баланс
-        if method == 'POST' and path.endswith('/admin/confirm'):
+        # POST ?action=admin_confirm
+        if method == 'POST' and (route == 'admin_confirm' or path.endswith('/admin/confirm')):
             if not user or not user[2]:
                 return err('Forbidden', 403)
             deposit_id = body.get('deposit_id')
@@ -168,8 +170,8 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             return ok({'ok': True, 'action': action})
 
-        # GET /admin/users — список всех пользователей
-        if method == 'GET' and path.endswith('/admin/users'):
+        # GET ?action=admin_users
+        if method == 'GET' and (route == 'admin_users' or path.endswith('/admin/users')):
             if not user or not user[2]:
                 return err('Forbidden', 403)
             with conn.cursor() as cur:
@@ -185,8 +187,8 @@ def handler(event: dict, context) -> dict:
                 for r in rows
             ]})
 
-        # POST /admin/adjust — ручное изменение баланса
-        if method == 'POST' and path.endswith('/admin/adjust'):
+        # POST ?action=admin_adjust
+        if method == 'POST' and (route == 'admin_adjust' or path.endswith('/admin/adjust')):
             if not user or not user[2]:
                 return err('Forbidden', 403)
             target_id = body.get('user_id')

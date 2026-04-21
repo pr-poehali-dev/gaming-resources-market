@@ -60,6 +60,8 @@ def handler(event: dict, context) -> dict:
 
     path = event.get('path', '/')
     method = event.get('httpMethod', 'GET')
+    qs = event.get('queryStringParameters') or {}
+    action = qs.get('action', '') or path.strip('/').split('/')[-1]
     body = {}
     if event.get('body'):
         try:
@@ -80,8 +82,8 @@ def handler(event: dict, context) -> dict:
     conn = get_conn()
 
     try:
-        # GET /me — текущий пользователь
-        if method == 'GET' and path.endswith('/me'):
+        # GET ?action=me
+        if method == 'GET' and (action == 'me' or path.endswith('/me')):
             if not session_id:
                 return err('Not authorized', 401)
             row = get_user_by_session(conn, session_id)
@@ -90,8 +92,8 @@ def handler(event: dict, context) -> dict:
             return ok({'id': row[0], 'username': row[1], 'email': row[2],
                        'is_admin': row[3], 'balance': float(row[4] or 0)})
 
-        # POST /register
-        if method == 'POST' and path.endswith('/register'):
+        # POST ?action=register
+        if method == 'POST' and (action == 'register' or path.endswith('/register')):
             username = (body.get('username') or '').strip()
             email = (body.get('email') or '').strip().lower()
             password = body.get('password') or ''
@@ -118,8 +120,8 @@ def handler(event: dict, context) -> dict:
             return ok({'id': user_id, 'username': username, 'email': email,
                        'is_admin': False, 'balance': 0.0}, session_id=sid)
 
-        # POST /login
-        if method == 'POST' and path.endswith('/login'):
+        # POST ?action=login
+        if method == 'POST' and (action == 'login' or path.endswith('/login')):
             email = (body.get('email') or '').strip().lower()
             password = body.get('password') or ''
             if not email or not password:
@@ -139,8 +141,8 @@ def handler(event: dict, context) -> dict:
             return ok({'id': row[0], 'username': row[1], 'email': row[2],
                        'is_admin': row[3], 'balance': float(row[4] or 0)}, session_id=sid)
 
-        # POST /logout
-        if method == 'POST' and path.endswith('/logout'):
+        # POST ?action=logout
+        if method == 'POST' and (action == 'logout' or path.endswith('/logout')):
             if session_id:
                 with conn.cursor() as cur:
                     cur.execute("UPDATE pd_sessions SET expires_at = NOW() WHERE id = %s", (session_id,))
