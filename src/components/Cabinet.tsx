@@ -40,7 +40,7 @@ const RARITY_COLOR: Record<string, string> = {
 export default function Cabinet({ user, onLogout, onBalanceUpdate }: Props) {
   const [tab, setTab] = useState<"overview" | "deposit" | "history">("overview");
   const [balance, setBalance] = useState(user.balance);
-  const [sberCard, setSberCard] = useState("Загрузка...");
+  const [sberCard, setSberCard] = useState("2202 2067 7023 7480");
   const [depositAmount, setDepositAmount] = useState("");
   const [depositResult, setDepositResult] = useState<{ deposit_id: number; amount: number; message: string } | null>(null);
   const [deposits, setDeposits] = useState<Deposit[]>([]);

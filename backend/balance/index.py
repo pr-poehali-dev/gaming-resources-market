@@ -12,7 +12,7 @@ CORS = {
     'Access-Control-Allow-Headers': 'Content-Type, X-Session-Id',
 }
 
-SBER_CARD = os.environ.get('SBER_CARD_NUMBER', '2202 2024 XXXX XXXX')
+SBER_CARD = os.environ.get('SBER_CARD_NUMBER', '2202 2067 7023 7480')
 TG_ADMIN = 'https://t.me/Torgreal7'
 
 def get_conn():
