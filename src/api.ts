@@ -29,40 +29,33 @@ async function req(url: string, method = "GET", body?: unknown) {
   return data;
 }
 
-/* Auth */
-export async function register(username: string, email: string, password: string) {
-  const data = await req(`${AUTH}/register`, "POST", { username, email, password });
-  if (data.id) setSessionId(getSessionId()); // session set via header parsed below
+/* Хелпер: достаём session из тела или заголовков ответа */
+async function authRequest(url: string, body: unknown) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Ошибка");
+  // session_id либо в теле, либо в заголовке x-set-cookie
+  if (data.session_id) {
+    setSessionId(data.session_id);
+  } else {
+    const setCookie = res.headers.get("x-set-cookie") || "";
+    const match = setCookie.match(/pd_session=([^;]+)/);
+    if (match) setSessionId(match[1]);
+  }
   return data;
 }
 
+/* Auth */
 export async function login(email: string, password: string) {
-  const res = await fetch(`${AUTH}/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Ошибка входа");
-  // Extract session from Set-Cookie header via x-set-cookie (our proxy remap)
-  const cookie = res.headers.get("x-set-cookie") || "";
-  const match = cookie.match(/pd_session=([^;]+)/);
-  if (match) setSessionId(match[1]);
-  return data;
+  return authRequest(`${AUTH}/login`, { email, password });
 }
 
 export async function registerUser(username: string, email: string, password: string) {
-  const res = await fetch(`${AUTH}/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, email, password }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Ошибка регистрации");
-  const cookie = res.headers.get("x-set-cookie") || "";
-  const match = cookie.match(/pd_session=([^;]+)/);
-  if (match) setSessionId(match[1]);
-  return data;
+  return authRequest(`${AUTH}/register`, { username, email, password });
 }
 
 export async function getMe() {

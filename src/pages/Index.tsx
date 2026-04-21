@@ -1,5 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import Icon from "@/components/ui/icon";
+import AuthModal, { type User } from "@/components/AuthModal";
+import CasePage from "@/components/CasePage";
+import Cabinet from "@/components/Cabinet";
+import AdminPanel from "@/components/AdminPanel";
+import { getMe } from "@/api";
 
 /* ---- Images ---- */
 const IMG_BG = "https://cdn.poehali.dev/projects/f4df7e9e-38ca-4c43-9a9a-658478926a3f/files/482adf94-6629-443d-b3cd-671ac067ca0a.jpg";
@@ -75,7 +80,7 @@ const FAQ_ITEMS = [
   { q: "Где посмотреть отзывы?", a: "Все отзывы собраны в нашем Telegram-канале. Ссылка есть в разделе Контакты." },
 ];
 
-type Page = "home" | "catalog" | "order" | "how" | "faq" | "contacts";
+type Page = "home" | "catalog" | "cases" | "how" | "faq" | "contacts" | "cabinet" | "admin";
 
 function useInView(threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
@@ -93,6 +98,12 @@ export default function Index() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartItems, setCartItems] = useState<{ product: Product; qty: number }[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [showAuth, setShowAuth] = useState(false);
+
+  useEffect(() => {
+    getMe().then(setUser).catch(() => {});
+  }, []);
 
   const nav = (p: Page) => { setPage(p); setMenuOpen(false); setCartOpen(false); window.scrollTo(0, 0); };
 
@@ -133,44 +144,67 @@ export default function Index() {
           <button onClick={() => nav("home")} className="flex items-center gap-2">
             <span className="text-xl">☣️</span>
             <div>
-              <div className="font-oswald font-bold text-base tracking-widest uppercase leading-none" style={{ color: "#F97316" }}>WASTELAND</div>
-              <div className="font-mono text-xs tracking-widest leading-none" style={{ color: "#444" }}>PREY DAY SHOP</div>
+              <div className="font-oswald font-bold text-base tracking-widest uppercase leading-none" style={{ color: "#F97316" }}>PreyDay</div>
+              <div className="font-mono text-xs tracking-widest leading-none" style={{ color: "#444" }}>SHOP</div>
             </div>
           </button>
 
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-5">
             {([["home","Главная"],["catalog","Товары"],["how","Как купить"],["faq","FAQ"],["contacts","Контакты"]] as [Page,string][]).map(([p, label]) => (
               <button key={p} onClick={() => nav(p)} className="font-oswald text-xs tracking-widest uppercase transition-colors"
                 style={{ color: page === p ? "#F97316" : "#666" }}>{label}</button>
             ))}
+            <button onClick={() => nav("cases")}
+              className="font-oswald text-xs tracking-widest uppercase px-3 py-1.5 rounded-sm transition-all"
+              style={{ color: page === "cases" ? "#0D0D0D" : "#F59E0B", backgroundColor: page === "cases" ? "#F59E0B" : "#F59E0B22", border: "1px solid #F59E0B" }}>
+              🎰 Кейсы
+            </button>
           </nav>
 
-          <div className="flex items-center gap-3">
-            {/* Cart button */}
+          <div className="flex items-center gap-2">
             <button onClick={() => setCartOpen(!cartOpen)} className="relative flex items-center gap-2 px-3 py-2 rounded-sm"
               style={{ backgroundColor: "#1A1A1A", border: "1px solid #2A2A2A" }}>
               <Icon name="ShoppingCart" size={16} style={{ color: "#E8DDD0" }} />
-              {cartCount > 0 && (
-                <span className="font-oswald text-xs font-bold" style={{ color: "#F97316" }}>{cartCount}</span>
-              )}
+              {cartCount > 0 && <span className="font-oswald text-xs font-bold" style={{ color: "#F97316" }}>{cartCount}</span>}
             </button>
-            <a href={TG_ADMIN1} target="_blank" rel="noreferrer" className="tg-btn px-4 py-2 text-xs rounded-sm hidden md:flex items-center gap-2">
-              <Icon name="Send" size={13} />
-              <span>Написать</span>
-            </a>
+            {user ? (
+              <button onClick={() => nav(user.is_admin ? "admin" : "cabinet")}
+                className="hidden md:flex items-center gap-2 px-3 py-2 rounded-sm"
+                style={{ backgroundColor: "#1A1A1A", border: "1px solid #2A2A2A" }}>
+                <Icon name="User" size={14} style={{ color: "#F97316" }} />
+                <span className="font-oswald text-xs uppercase tracking-wide" style={{ color: "#E8DDD0" }}>{user.username}</span>
+                <span className="font-oswald text-xs font-bold" style={{ color: "#F97316" }}>{user.balance.toFixed(0)} ₽</span>
+              </button>
+            ) : (
+              <button onClick={() => setShowAuth(true)}
+                className="btn-orange px-4 py-2 text-xs rounded-sm hidden md:flex items-center gap-2">
+                <Icon name="LogIn" size={13} /><span>Войти</span>
+              </button>
+            )}
             <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden" style={{ color: "#E8DDD0" }}>
               <Icon name={menuOpen ? "X" : "Menu"} size={22} />
             </button>
           </div>
         </div>
 
-        {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden px-5 pb-5 flex flex-col gap-4" style={{ borderTop: "1px solid #1F1F1F", paddingTop: "1rem" }}>
+          <div className="md:hidden px-5 pb-5 flex flex-col gap-3" style={{ borderTop: "1px solid #1F1F1F", paddingTop: "1rem" }}>
             {([["home","Главная"],["catalog","Товары"],["how","Как купить"],["faq","FAQ"],["contacts","Контакты"]] as [Page,string][]).map(([p, label]) => (
               <button key={p} onClick={() => nav(p)} className="font-oswald text-left text-sm tracking-widest uppercase"
                 style={{ color: page === p ? "#F97316" : "#888" }}>{label}</button>
             ))}
+            <button onClick={() => nav("cases")} className="font-oswald text-left text-sm tracking-widest uppercase" style={{ color: "#F59E0B" }}>
+              🎰 Кейсы
+            </button>
+            {user ? (
+              <button onClick={() => nav(user.is_admin ? "admin" : "cabinet")} className="font-oswald text-left text-sm tracking-widest uppercase" style={{ color: "#F97316" }}>
+                👤 {user.username} — {user.balance.toFixed(0)} ₽
+              </button>
+            ) : (
+              <button onClick={() => { setShowAuth(true); setMenuOpen(false); }} className="btn-orange px-4 py-2 text-xs rounded-sm flex items-center gap-2 w-fit">
+                <Icon name="LogIn" size={14} /><span>Войти / Регистрация</span>
+              </button>
+            )}
             <a href={TG_ADMIN1} target="_blank" rel="noreferrer" className="tg-btn px-4 py-2 text-xs rounded-sm flex items-center gap-2 w-fit">
               <Icon name="Send" size={14} /><span>Написать в Telegram</span>
             </a>
@@ -238,23 +272,44 @@ export default function Index() {
       <main style={{ paddingTop: "61px" }}>
         {page === "home"     && <HomePage onNav={nav} onAdd={addToCart} />}
         {page === "catalog"  && <CatalogPage onAdd={addToCart} onBuy={buyNow} />}
+        {page === "cases"    && (
+          <CasePage
+            user={user}
+            onAuthRequired={() => setShowAuth(true)}
+            onBalanceUpdate={b => setUser(u => u ? { ...u, balance: b } : u)}
+          />
+        )}
+        {page === "cabinet"  && user && (
+          <Cabinet
+            user={user}
+            onLogout={() => { setUser(null); nav("home"); }}
+            onBalanceUpdate={b => setUser(u => u ? { ...u, balance: b } : u)}
+          />
+        )}
+        {page === "admin"    && user?.is_admin && <AdminPanel />}
         {page === "how"      && <HowPage />}
         {page === "faq"      && <FaqPage />}
         {page === "contacts" && <ContactsPage />}
       </main>
 
-      {/* FOOTER */}
+      {showAuth && (
+        <AuthModal
+          onClose={() => setShowAuth(false)}
+          onSuccess={u => { setUser(u); nav(u.is_admin ? "admin" : "cabinet"); }}
+        />
+      )}
+
       <footer style={{ borderTop: "1px solid #1A1A1A", backgroundColor: "#080808" }} className="mt-20 py-10 px-5">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <span>☣️</span>
             <div>
-              <div className="font-oswald font-bold tracking-widest text-sm uppercase" style={{ color: "#F97316" }}>WASTELAND SHOP</div>
+              <div className="font-oswald font-bold tracking-widest text-sm uppercase" style={{ color: "#F97316" }}>PreyDay Shop</div>
               <div className="font-mono text-xs" style={{ color: "#444" }}>Prey Day Survival</div>
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-5">
-            {([["home","Главная"],["catalog","Товары"],["how","Как купить"],["faq","FAQ"],["contacts","Контакты"]] as [Page,string][]).map(([p,label]) => (
+            {([["home","Главная"],["catalog","Товары"],["cases","Кейсы"],["how","Как купить"],["faq","FAQ"],["contacts","Контакты"]] as [Page,string][]).map(([p,label]) => (
               <button key={p} onClick={() => nav(p)} className="font-oswald text-xs tracking-widest uppercase" style={{ color: "#555" }}>{label}</button>
             ))}
           </div>
@@ -268,7 +323,7 @@ export default function Index() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-6 pt-6 text-center font-mono text-xs" style={{ borderTop: "1px solid #1A1A1A", color: "#333" }}>
-          © 2025 WASTELAND SHOP — Неофициальный магазин ресурсов Prey Day Survival • ❌ Без входа на аккаунт
+          © 2025 PreyDay Shop — Неофициальный магазин ресурсов Prey Day Survival • ❌ Без входа на аккаунт
         </div>
       </footer>
     </div>

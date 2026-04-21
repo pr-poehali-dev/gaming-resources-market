@@ -46,6 +46,9 @@ def ok(data: dict, session_id: str = None):
     headers = dict(CORS)
     if session_id:
         headers['X-Set-Cookie'] = f'pd_session={session_id}; Path=/; HttpOnly; Max-Age=2592000'
+        # Также кладём session_id в тело ответа — надёжнее чем заголовки
+        data = dict(data)
+        data['session_id'] = session_id
     return {'statusCode': 200, 'headers': headers, 'body': json.dumps(data)}
 
 def err(msg: str, code: int = 400):
