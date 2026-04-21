@@ -1,640 +1,528 @@
 import { useState, useEffect, useRef } from "react";
 import Icon from "@/components/ui/icon";
 
-const IMG_HERO = "https://cdn.poehali.dev/projects/f4df7e9e-38ca-4c43-9a9a-658478926a3f/files/4150d1d8-fc18-49aa-93e7-ac77a50d6a0e.jpg";
-const IMG_TROPICAL = "https://cdn.poehali.dev/projects/f4df7e9e-38ca-4c43-9a9a-658478926a3f/files/23e25a8d-1909-4e78-8bd3-0d09c665232b.jpg";
-const IMG_MAGNOLIA = "https://cdn.poehali.dev/projects/f4df7e9e-38ca-4c43-9a9a-658478926a3f/files/59c91b66-e441-489c-86e2-8d60577397bb.jpg";
+const IMG_BG = "https://cdn.poehali.dev/projects/f4df7e9e-38ca-4c43-9a9a-658478926a3f/files/482adf94-6629-443d-b3cd-671ac067ca0a.jpg";
+const IMG_COWBOY = "https://cdn.poehali.dev/projects/f4df7e9e-38ca-4c43-9a9a-658478926a3f/files/77e96c0d-9a4a-4f00-a7b7-808d2e684032.jpg";
+const IMG_SAMURAI = "https://cdn.poehali.dev/projects/f4df7e9e-38ca-4c43-9a9a-658478926a3f/files/749d2710-b283-4344-bae3-b2beeca9b467.jpg";
+const IMG_AMMO = "https://cdn.poehali.dev/projects/f4df7e9e-38ca-4c43-9a9a-658478926a3f/files/2e9d7b55-d51c-42cd-abf0-46b5efe32777.jpg";
+const IMG_MEDS = "https://cdn.poehali.dev/projects/f4df7e9e-38ca-4c43-9a9a-658478926a3f/files/8236384d-4eaa-484d-b527-9f01d35dd2d5.jpg";
 
-type Page = "home" | "catalog" | "about" | "cart" | "contacts" | "faq";
+const TG_LINK = "https://t.me/fuckktokyo";
 
-const CATALOG_ITEMS = [
-  { id: 1, name: "Утренний бриз", price: 3200, tag: "Хит продаж", img: IMG_HERO, desc: "Розы, пионы, эвкалипт" },
-  { id: 2, name: "Тропический рай", price: 4800, tag: "Новинка", img: IMG_TROPICAL, desc: "Антуриум, стрелиция, монстера" },
-  { id: 3, name: "Белая магнолия", price: 5500, tag: "Премиум", img: IMG_MAGNOLIA, desc: "Магнолия, орхидеи, зелень" },
-  { id: 4, name: "Летний закат", price: 2900, tag: "", img: IMG_HERO, desc: "Подсолнухи, ромашки, лаванда" },
-  { id: 5, name: "Нежность", price: 3800, tag: "Хит продаж", img: IMG_MAGNOLIA, desc: "Пионы, фрезия, гортензия" },
-  { id: 6, name: "Экзотика", price: 6200, tag: "Лимитед", img: IMG_TROPICAL, desc: "Гелиония, паучья лилия, листья" },
+type Page = "home" | "catalog" | "faq" | "contacts";
+
+const PRODUCTS = [
+  {
+    id: 1,
+    name: "Ковбой",
+    price: 1200,
+    img: IMG_COWBOY,
+    badge: "ТОП",
+    badgeColor: "#F97316",
+    desc: "Уникальный образ выжившего. Полный набор снаряжения ковбоя для доминирования в пустоши.",
+    emoji: "🤠",
+    tag: "Скин персонажа",
+  },
+  {
+    id: 2,
+    name: "Самурай",
+    price: 500,
+    img: IMG_SAMURAI,
+    badge: "ХИТ",
+    badgeColor: "#DC2626",
+    desc: "Броня и стиль воина. Наводи страх на врагов своим видом в постапокалиптическом мире.",
+    emoji: "⚔️",
+    tag: "Скин персонажа",
+  },
+  {
+    id: 3,
+    name: "Патроны",
+    price: 700,
+    img: IMG_AMMO,
+    badge: "",
+    badgeColor: "",
+    desc: "Боеприпасы для выживания. Запасайся впрок — в пустоши патроны ценятся на вес золота.",
+    emoji: "🔫",
+    tag: "Ресурс",
+  },
+  {
+    id: 4,
+    name: "Медикаменты",
+    price: 100,
+    img: IMG_MEDS,
+    badge: "ДЁШЕВО",
+    badgeColor: "#16A34A",
+    desc: "Аптечки и лекарства. Восстанови здоровье в самый нужный момент и продолжай бой.",
+    emoji: "💊",
+    tag: "Ресурс",
+  },
 ];
 
 const FAQ_ITEMS = [
-  { q: "Как быстро доставляют цветы?", a: "Доставляем в течение 2–4 часов по городу. Возможна срочная доставка за 1 час при наличии." },
-  { q: "Как происходит оплата?", a: "Принимаем карты Visa, MasterCard, МИР, SBP, а также наличные при получении." },
-  { q: "Можно ли заказать индивидуальный букет?", a: "Да! Напишите нам в мессенджер или позвоните — составим букет по вашему пожеланию и бюджету." },
-  { q: "Как долго стоят цветы?", a: "При правильном уходе — 7–14 дней. К каждому заказу прикладываем инструкцию по уходу." },
-  { q: "Есть ли доставка по всей России?", a: "Да, работаем с курьерскими службами по всей России. Сроки и стоимость рассчитываются индивидуально." },
+  { q: "Как купить товар?", a: "Нажмите «Купить» на любом товаре — откроется Telegram с готовым сообщением. Укажите нужный товар и количество, и мы быстро ответим." },
+  { q: "Как быстро получу товар?", a: "Передача ресурсов происходит в течение 5–30 минут после подтверждения оплаты. Работаем быстро!" },
+  { q: "Как происходит оплата?", a: "Оплата через перевод на карту СберБанка. Реквизиты отправим в Telegram после подтверждения заказа." },
+  { q: "Безопасно ли покупать?", a: "Да! Мы работаем давно, имеем множество положительных отзывов. Передача только после получения оплаты." },
+  { q: "Можно ли купить сразу несколько товаров?", a: "Конечно! Напишите список нужных товаров и количество — сделаем скидку при большом заказе." },
 ];
 
-interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  img: string;
-  qty: number;
-}
-
-function useInView(threshold = 0.1) {
+function useInView(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
-
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setInView(true); },
-      { threshold }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setInView(true); }, { threshold });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
   }, []);
-
   return { ref, inView };
 }
 
 export default function Index() {
   const [page, setPage] = useState<Page>("home");
-  const [cart, setCart] = useState<CartItem[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [contactForm, setContactForm] = useState({ name: "", phone: "", message: "" });
-  const [submitted, setSubmitted] = useState(false);
-
-  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
-  const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-
-  const addToCart = (item: typeof CATALOG_ITEMS[0]) => {
-    setCart(prev => {
-      const ex = prev.find(c => c.id === item.id);
-      if (ex) return prev.map(c => c.id === item.id ? { ...c, qty: c.qty + 1 } : c);
-      return [...prev, { id: item.id, name: item.name, price: item.price, img: item.img, qty: 1 }];
-    });
-  };
-
-  const removeFromCart = (id: number) => setCart(prev => prev.filter(c => c.id !== id));
-  const updateQty = (id: number, delta: number) => {
-    setCart(prev => prev.map(c => c.id === id ? { ...c, qty: Math.max(1, c.qty + delta) } : c));
-  };
 
   const nav = (p: Page) => { setPage(p); setMenuOpen(false); window.scrollTo(0, 0); };
 
+  const buyItem = (name: string, price: number) => {
+    const msg = encodeURIComponent(`Привет! Хочу купить: ${name} (${price} ₽)`);
+    window.open(`${TG_LINK}?text=${msg}`, "_blank");
+  };
+
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#0A0A0A", color: "#F5F5F0" }}>
+    <div style={{ backgroundColor: "#0D0D0D", color: "#E8DDD0", minHeight: "100vh" }}>
+
       {/* NAVBAR */}
-      <header
-        style={{ borderBottom: "1px solid #1A1A1A", backgroundColor: "rgba(10,10,10,0.95)", backdropFilter: "blur(20px)" }}
-        className="fixed top-0 left-0 right-0 z-50"
-      >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <button onClick={() => nav("home")} className="font-cormorant text-3xl font-bold tracking-wider" style={{ color: "#F5F5F0" }}>
-            BLOOM
+      <header className="fixed top-0 left-0 right-0 z-50" style={{ backgroundColor: "rgba(13,13,13,0.96)", backdropFilter: "blur(12px)", borderBottom: "1px solid #1F1F1F" }}>
+        <div className="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
+          <button onClick={() => nav("home")} className="flex items-center gap-2">
+            <span className="text-xl" style={{ filter: "drop-shadow(0 0 6px #F97316)" }}>☣️</span>
+            <div>
+              <div className="font-oswald font-bold text-base tracking-widest uppercase" style={{ color: "#F97316", lineHeight: 1 }}>
+                WASTELAND
+              </div>
+              <div className="font-mono text-xs tracking-widest" style={{ color: "#555", lineHeight: 1 }}>
+                PREY DAY SHOP
+              </div>
+            </div>
           </button>
 
           <nav className="hidden md:flex items-center gap-8">
-            {([["home","Главная"],["catalog","Каталог"],["about","О нас"],["contacts","Контакты"],["faq","FAQ"]] as [Page,string][]).map(([p, label]) => (
-              <button
-                key={p}
-                onClick={() => nav(p)}
-                className="font-golos text-sm font-medium uppercase transition-colors"
-                style={{ color: page === p ? "#B5F43C" : "#888888", letterSpacing: "0.1em" }}
-              >
+            {([["home","Главная"],["catalog","Товары"],["faq","FAQ"],["contacts","Контакты"]] as [Page,string][]).map(([p, label]) => (
+              <button key={p} onClick={() => nav(p)}
+                className="font-oswald text-sm tracking-widest uppercase transition-colors"
+                style={{ color: page === p ? "#F97316" : "#666" }}>
                 {label}
               </button>
             ))}
           </nav>
 
-          <div className="flex items-center gap-4">
-            <button onClick={() => nav("cart")} className="relative flex items-center gap-2 btn-outline-lime px-4 py-2 text-sm rounded">
-              <Icon name="ShoppingBag" size={16} />
-              <span className="font-golos font-semibold">Корзина</span>
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: "#B5F43C", color: "#0A0A0A" }}>
-                  {cartCount}
-                </span>
-              )}
-            </button>
-
-            <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden" style={{ color: "#F5F5F0" }}>
-              <Icon name={menuOpen ? "X" : "Menu"} size={24} />
+          <div className="flex items-center gap-3">
+            <a href={TG_LINK} target="_blank" rel="noreferrer" className="tg-btn px-4 py-2 text-xs rounded-sm hidden md:flex items-center gap-2">
+              <Icon name="Send" size={14} />
+              <span>Написать</span>
+            </a>
+            <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden" style={{ color: "#E8DDD0" }}>
+              <Icon name={menuOpen ? "X" : "Menu"} size={22} />
             </button>
           </div>
         </div>
 
         {menuOpen && (
-          <div className="md:hidden px-6 pb-6 flex flex-col gap-4" style={{ borderTop: "1px solid #1A1A1A", paddingTop: "1rem" }}>
-            {([["home","Главная"],["catalog","Каталог"],["about","О нас"],["contacts","Контакты"],["faq","FAQ"]] as [Page,string][]).map(([p, label]) => (
-              <button key={p} onClick={() => nav(p)} className="font-golos text-left text-sm font-medium uppercase tracking-widest" style={{ color: page === p ? "#B5F43C" : "#888888" }}>
+          <div className="md:hidden px-5 pb-5 flex flex-col gap-4" style={{ borderTop: "1px solid #1F1F1F", paddingTop: "1rem" }}>
+            {([["home","Главная"],["catalog","Товары"],["faq","FAQ"],["contacts","Контакты"]] as [Page,string][]).map(([p, label]) => (
+              <button key={p} onClick={() => nav(p)} className="font-oswald text-left text-sm tracking-widest uppercase" style={{ color: page === p ? "#F97316" : "#888" }}>
                 {label}
               </button>
             ))}
+            <a href={TG_LINK} target="_blank" rel="noreferrer" className="tg-btn px-4 py-2 text-xs rounded-sm flex items-center gap-2 w-fit">
+              <Icon name="Send" size={14} />
+              <span>Написать в Telegram</span>
+            </a>
           </div>
         )}
       </header>
 
-      <main style={{ paddingTop: "73px" }}>
-        {page === "home" && <HomePage onNav={nav} onAddToCart={addToCart} />}
-        {page === "catalog" && <CatalogPage onAddToCart={addToCart} />}
-        {page === "about" && <AboutPage />}
-        {page === "cart" && <CartPage cart={cart} total={cartTotal} onRemove={removeFromCart} onUpdateQty={updateQty} onNav={nav} />}
-        {page === "contacts" && <ContactsPage form={contactForm} setForm={setContactForm} submitted={submitted} setSubmitted={setSubmitted} />}
+      <main style={{ paddingTop: "61px" }}>
+        {page === "home" && <HomePage onNav={nav} onBuy={buyItem} />}
+        {page === "catalog" && <CatalogPage onBuy={buyItem} />}
         {page === "faq" && <FaqPage openFaq={openFaq} setOpenFaq={setOpenFaq} />}
+        {page === "contacts" && <ContactsPage />}
       </main>
 
-      <footer style={{ borderTop: "1px solid #1A1A1A", backgroundColor: "#050505" }} className="mt-24 py-12 px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
-          <div>
-            <div className="font-cormorant text-4xl font-bold mb-3">BLOOM</div>
-            <p className="font-golos text-sm leading-relaxed" style={{ color: "#666" }}>
-              Свежие цветы с душой.<br/>Каждый букет — маленький шедевр.
-            </p>
-          </div>
-          <div>
-            <div className="tag mb-4">Навигация</div>
-            <div className="flex flex-col gap-2">
-              {([["home","Главная"],["catalog","Каталог"],["about","О магазине"],["faq","FAQ"]] as [Page,string][]).map(([p,label]) => (
-                <button key={p} onClick={() => nav(p)} className="text-left font-golos text-sm hover:text-white transition-colors" style={{ color: "#666" }}>{label}</button>
-              ))}
+      {/* FOOTER */}
+      <footer style={{ borderTop: "1px solid #1A1A1A", backgroundColor: "#080808" }} className="mt-20 py-10 px-5">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">☣️</span>
+            <div>
+              <div className="font-oswald font-bold tracking-widest text-sm uppercase" style={{ color: "#F97316" }}>WASTELAND SHOP</div>
+              <div className="font-mono text-xs" style={{ color: "#444" }}>Prey Day Survival</div>
             </div>
           </div>
-          <div>
-            <div className="tag mb-4">Контакты</div>
-            <div className="flex flex-col gap-2 font-golos text-sm" style={{ color: "#666" }}>
-              <span>+7 (999) 000-00-00</span>
-              <span>hello@bloom-shop.ru</span>
-              <span>Москва, ул. Цветочная, 1</span>
-              <div className="flex gap-3 mt-3">
-                <button className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ border: "1px solid #333", color: "#888" }}>
-                  <Icon name="Send" size={14} />
-                </button>
-                <button className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ border: "1px solid #333", color: "#888" }}>
-                  <Icon name="Instagram" size={14} />
-                </button>
-              </div>
-            </div>
+          <div className="flex items-center gap-6">
+            {([["home","Главная"],["catalog","Товары"],["faq","FAQ"],["contacts","Контакты"]] as [Page,string][]).map(([p,label]) => (
+              <button key={p} onClick={() => nav(p)} className="font-oswald text-xs tracking-widest uppercase transition-colors" style={{ color: "#555" }}>{label}</button>
+            ))}
           </div>
+          <a href={TG_LINK} target="_blank" rel="noreferrer" className="tg-btn px-5 py-2 text-xs rounded-sm flex items-center gap-2">
+            <Icon name="Send" size={14} />
+            <span>@fuckktokyo</span>
+          </a>
         </div>
-        <div className="max-w-7xl mx-auto mt-10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4" style={{ borderTop: "1px solid #1A1A1A" }}>
-          <p className="font-golos text-xs" style={{ color: "#444" }}>© 2025 BLOOM. Все права защищены.</p>
-          <p className="font-golos text-xs" style={{ color: "#444" }}>Сделано с любовью к цветам</p>
+        <div className="max-w-6xl mx-auto mt-6 pt-6 text-center font-mono text-xs" style={{ borderTop: "1px solid #1A1A1A", color: "#333" }}>
+          © 2025 WASTELAND SHOP — Неофициальный магазин ресурсов Prey Day Survival
         </div>
       </footer>
     </div>
   );
 }
 
-function HomePage({ onNav, onAddToCart }: { onNav: (p: Page) => void; onAddToCart: (item: typeof CATALOG_ITEMS[0]) => void }) {
-  const featuredRef = useInView();
-  const marqueeText = "СВЕЖИЕ ЦВЕТЫ • АВТОРСКИЕ БУКЕТЫ • ДОСТАВКА ДЕНЬ В ДЕНЬ • ПОДАРОЧНАЯ УПАКОВКА • ";
+/* ============ HOME PAGE ============ */
+function HomePage({ onNav, onBuy }: { onNav: (p: Page) => void; onBuy: (name: string, price: number) => void }) {
+  const sec1 = useInView();
+  const sec2 = useInView();
+  const marquee = "ВЫЖИВИ • КУПИ РЕСУРСЫ • СТАНЬ СИЛЬНЕЕ • PREY DAY SURVIVAL • WASTELAND SHOP • ";
 
   return (
     <div>
-      <section className="relative min-h-screen flex items-center overflow-hidden" style={{ backgroundColor: "#0A0A0A" }}>
+      {/* HERO */}
+      <section className="relative scanlines overflow-hidden" style={{ minHeight: "100vh", display: "flex", alignItems: "center" }}>
         <div className="absolute inset-0">
-          <img src={IMG_HERO} alt="Flowers" className="w-full h-full object-cover opacity-40" style={{ objectPosition: "center top" }} />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(to right, #0A0A0A 40%, transparent 100%)" }} />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #0A0A0A 10%, transparent 60%)" }} />
+          <img src={IMG_BG} alt="Wasteland" className="w-full h-full object-cover" style={{ opacity: 0.35 }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to right, #0D0D0D 45%, transparent 100%)" }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #0D0D0D 10%, transparent 60%)" }} />
+          {/* red vignette */}
+          <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at center, transparent 40%, rgba(139,0,0,0.25) 100%)" }} />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 py-20">
-          <div className="max-w-2xl">
-            <div className="tag mb-6 opacity-0 animate-fade-up" style={{ animationDelay: "0.1s", animationFillMode: "forwards" }}>
-              ✦ Новая коллекция 2025
+        <div className="relative z-10 max-w-6xl mx-auto px-5 py-24">
+          <div className="max-w-xl">
+            <div className="tag mb-4 opacity-0 animate-fade-up" style={{ animationFillMode: "forwards", animationDelay: "0.1s" }}>
+              ⚠ Prey Day Survival — Торговая точка
             </div>
-            <h1 className="font-cormorant opacity-0 animate-fade-up mb-6 leading-none" style={{ fontSize: "clamp(4rem, 10vw, 9rem)", fontWeight: 300, color: "#F5F5F0", animationDelay: "0.2s", animationFillMode: "forwards" }}>
-              Цветы,<br />
-              <em style={{ fontStyle: "italic", color: "#B5F43C" }}>которые</em><br />
-              говорят
+            <h1 className="font-oswald opacity-0 animate-fade-up mb-5"
+              style={{ fontSize: "clamp(3.5rem, 9vw, 8rem)", fontWeight: 700, lineHeight: 1, animationDelay: "0.2s", animationFillMode: "forwards" }}>
+              <span style={{ color: "#E8DDD0" }}>WASTELAND</span><br />
+              <span style={{ color: "#F97316" }} className="animate-flicker">SHOP</span>
             </h1>
-            <p className="font-golos text-lg mb-10 opacity-0 animate-fade-up" style={{ color: "#888", animationDelay: "0.3s", animationFillMode: "forwards", maxWidth: "480px" }}>
-              Авторские букеты из свежих цветов. Доставляем радость в течение 2 часов по всему городу.
+            <p className="font-oswald font-light text-lg mb-8 opacity-0 animate-fade-up"
+              style={{ color: "#888", animationDelay: "0.3s", animationFillMode: "forwards", letterSpacing: "0.05em" }}>
+              Ресурсы для выживания в постапокалипсисе.<br />
+              Быстро. Надёжно. Без лишних вопросов.
             </p>
             <div className="flex flex-wrap gap-4 opacity-0 animate-fade-up" style={{ animationDelay: "0.4s", animationFillMode: "forwards" }}>
-              <button onClick={() => onNav("catalog")} className="btn-lime px-8 py-4 rounded-sm text-sm font-golos font-bold uppercase tracking-widest">
-                Смотреть каталог
+              <button onClick={() => onNav("catalog")} className="btn-orange px-8 py-3 rounded-sm text-sm">
+                Купить ресурсы
               </button>
-              <button onClick={() => onNav("contacts")} className="btn-outline-lime px-8 py-4 rounded-sm text-sm font-golos font-bold uppercase tracking-widest">
-                Заказать букет
-              </button>
+              <a href={TG_LINK} target="_blank" rel="noreferrer" className="tg-btn px-8 py-3 rounded-sm text-sm flex items-center gap-2">
+                <Icon name="Send" size={16} />
+                <span>Telegram</span>
+              </a>
             </div>
+          </div>
+
+          {/* Stats */}
+          <div className="flex flex-wrap gap-8 mt-16 opacity-0 animate-fade-up" style={{ animationDelay: "0.55s", animationFillMode: "forwards" }}>
+            {[["4", "товара"], ["5–30 мин", "доставка"], ["100%", "гарантия"]].map(([val, label]) => (
+              <div key={label}>
+                <div className="font-oswald text-2xl font-bold" style={{ color: "#F97316" }}>{val}</div>
+                <div className="font-mono text-xs uppercase tracking-widest" style={{ color: "#555" }}>{label}</div>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="absolute bottom-12 right-6 md:right-12 z-10 flex gap-8 opacity-0 animate-fade-up" style={{ animationDelay: "0.6s", animationFillMode: "forwards" }}>
-          {[["500+", "сортов цветов"], ["2ч", "доставка"], ["10k+", "клиентов"]].map(([num, label]) => (
-            <div key={num} className="text-right">
-              <div className="font-cormorant text-3xl font-bold" style={{ color: "#B5F43C" }}>{num}</div>
-              <div className="font-golos text-xs uppercase tracking-widest" style={{ color: "#666" }}>{label}</div>
-            </div>
-          ))}
+        {/* scroll hint */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1 opacity-40">
+          <div className="font-mono text-xs tracking-widest" style={{ color: "#666" }}>SCROLL</div>
+          <Icon name="ChevronDown" size={16} style={{ color: "#666" }} />
         </div>
       </section>
 
-      <div className="py-5 overflow-hidden" style={{ backgroundColor: "#B5F43C" }}>
+      {/* MARQUEE */}
+      <div className="py-3 overflow-hidden" style={{ backgroundColor: "#F97316" }}>
         <div className="flex animate-marquee whitespace-nowrap" style={{ width: "max-content" }}>
           {[...Array(4)].map((_, i) => (
-            <span key={i} className="font-golos font-black uppercase text-sm tracking-widest px-4" style={{ color: "#0A0A0A" }}>
-              {marqueeText}
+            <span key={i} className="font-oswald font-bold text-xs tracking-widest px-4 uppercase" style={{ color: "#0D0D0D" }}>
+              {marquee}
             </span>
           ))}
         </div>
       </div>
 
-      <section className="py-24 px-6 max-w-7xl mx-auto" ref={featuredRef.ref}>
-        <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-14 gap-6">
+      {/* PRODUCTS PREVIEW */}
+      <section className="py-20 px-5 max-w-6xl mx-auto" ref={sec1.ref}>
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-12 gap-4">
           <div>
-            <div className="tag mb-3">Избранное</div>
-            <h2 className="font-cormorant" style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)", fontWeight: 300, lineHeight: 1 }}>
-              Топ букеты
-            </h2>
+            <div className="tag mb-2">Ассортимент</div>
+            <h2 className="font-oswald text-5xl md:text-6xl font-bold">ТОВАРЫ</h2>
           </div>
-          <button onClick={() => onNav("catalog")} className="btn-outline-lime px-6 py-3 rounded-sm text-sm uppercase tracking-widest font-golos font-bold whitespace-nowrap">
-            Весь каталог →
+          <button onClick={() => onNav("catalog")} className="btn-outline px-6 py-2 rounded-sm text-sm">
+            Все товары →
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {CATALOG_ITEMS.slice(0, 3).map((item, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {PRODUCTS.map((item, i) => (
             <div
               key={item.id}
-              className={`card-hover rounded-sm overflow-hidden opacity-0 ${featuredRef.inView ? "animate-fade-up" : ""}`}
-              style={{ backgroundColor: "#111111", animationDelay: `${i * 0.15}s`, animationFillMode: "forwards" }}
+              className={`card-hover rounded-sm overflow-hidden opacity-0 ${sec1.inView ? "animate-fade-up" : ""}`}
+              style={{ backgroundColor: "#111", animationDelay: `${i * 0.1}s`, animationFillMode: "forwards", border: "1px solid #1A1A1A" }}
             >
-              <div className="relative overflow-hidden" style={{ height: "320px" }}>
-                <img src={item.img} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 hover:scale-110" />
-                {item.tag && (
-                  <span className="absolute top-4 left-4 px-3 py-1 rounded-sm text-xs font-golos font-bold uppercase tracking-widest" style={{ backgroundColor: "#B5F43C", color: "#0A0A0A" }}>
-                    {item.tag}
+              <div className="relative overflow-hidden" style={{ height: "200px" }}>
+                <img src={item.img} alt={item.name} className="w-full h-full object-cover transition-transform duration-500 hover:scale-110" />
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #111 5%, transparent 50%)" }} />
+                {item.badge && (
+                  <span className="absolute top-3 right-3 px-2 py-0.5 rounded-sm text-xs font-oswald font-bold tracking-widest uppercase"
+                    style={{ backgroundColor: item.badgeColor, color: "#fff" }}>
+                    {item.badge}
                   </span>
                 )}
+                <div className="absolute bottom-3 left-3 text-2xl">{item.emoji}</div>
               </div>
-              <div className="p-6">
-                <div className="font-golos text-xs mb-1" style={{ color: "#666" }}>{item.desc}</div>
-                <h3 className="font-cormorant text-2xl font-semibold mb-4">{item.name}</h3>
-                <div className="flex items-center justify-between">
-                  <span className="font-cormorant text-3xl font-bold" style={{ color: "#B5F43C" }}>{item.price.toLocaleString()} ₽</span>
-                  <button onClick={() => onAddToCart(item)} className="btn-lime px-5 py-2 rounded-sm text-sm">
-                    В корзину
-                  </button>
-                </div>
+              <div className="p-4">
+                <div className="tag text-xs mb-1">{item.tag}</div>
+                <h3 className="font-oswald text-xl font-bold uppercase mb-1">{item.name}</h3>
+                <div className="font-oswald text-2xl font-bold mb-4" style={{ color: "#F97316" }}>{item.price.toLocaleString()} ₽</div>
+                <button onClick={() => onBuy(item.name, item.price)} className="w-full tg-btn py-2 rounded-sm text-xs flex items-center justify-center gap-2">
+                  <Icon name="Send" size={13} />
+                  <span>Купить</span>
+                </button>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="mx-6 rounded-sm overflow-hidden relative mb-24">
-        <div className="relative h-80 md:h-96">
-          <img src={IMG_TROPICAL} alt="About" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 flex items-center px-12" style={{ background: "rgba(10,10,10,0.6)" }}>
-            <div className="max-w-lg">
-              <div className="tag mb-4">О магазине</div>
-              <h2 className="font-cormorant text-5xl md:text-6xl font-light mb-6" style={{ lineHeight: 1.1 }}>
-                Цветы — наша<br /><em style={{ color: "#B5F43C", fontStyle: "italic" }}>страсть</em>
-              </h2>
-              <button onClick={() => onNav("about")} className="btn-lime px-7 py-3 rounded-sm text-sm uppercase tracking-widest font-golos font-bold">
-                Узнать больше
-              </button>
-            </div>
+      {/* HOW IT WORKS */}
+      <section className="py-16 px-5" style={{ backgroundColor: "#0A0A0A", borderTop: "1px solid #1A1A1A", borderBottom: "1px solid #1A1A1A" }} ref={sec2.ref}>
+        <div className="max-w-6xl mx-auto">
+          <div className="tag text-center mb-3">Как это работает</div>
+          <h2 className="font-oswald text-4xl md:text-5xl font-bold text-center mb-12">КАК КУПИТЬ</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { num: "01", icon: "ShoppingCart", title: "Выбери товар", desc: "Найди нужный ресурс в нашем каталоге и нажми «Купить»" },
+              { num: "02", icon: "Send", title: "Напиши в Telegram", desc: "Откроется чат с @fuckktokyo — подтверди заказ и получи реквизиты" },
+              { num: "03", icon: "Zap", title: "Получи ресурс", desc: "После оплаты — передача ресурса в игре в течение 5–30 минут" },
+            ].map(({ num, icon, title, desc }, i) => (
+              <div
+                key={num}
+                className={`opacity-0 ${sec2.inView ? "animate-fade-up" : ""} p-6 rounded-sm`}
+                style={{ backgroundColor: "#111", border: "1px solid #1A1A1A", animationDelay: `${i * 0.15}s`, animationFillMode: "forwards" }}
+              >
+                <div className="font-mono text-4xl font-bold mb-4" style={{ color: "#1F1F1F" }}>{num}</div>
+                <div className="w-10 h-10 rounded-sm flex items-center justify-center mb-4" style={{ backgroundColor: "#F97316" }}>
+                  <Icon name={icon as "Send"} size={20} style={{ color: "#0D0D0D" }} />
+                </div>
+                <h3 className="font-oswald text-xl font-bold uppercase mb-2">{title}</h3>
+                <p className="font-mono text-xs leading-relaxed" style={{ color: "#666" }}>{desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-6 pb-24">
-        <div className="tag text-center mb-10">Принимаем к оплате</div>
-        <div className="flex flex-wrap items-center justify-center gap-6">
-          {["Visa", "MasterCard", "МИР", "SBP", "Apple Pay", "Google Pay"].map(method => (
-            <div key={method} className="px-6 py-3 rounded-sm font-golos font-semibold text-sm" style={{ border: "1px solid #222", color: "#888" }}>
-              {method}
-            </div>
-          ))}
-        </div>
+      {/* CTA */}
+      <section className="py-20 px-5 max-w-6xl mx-auto text-center">
+        <div className="tag mb-3">Готов выжить?</div>
+        <h2 className="font-oswald text-5xl md:text-6xl font-bold mb-6">
+          ПИШИ ПРЯМО <span style={{ color: "#F97316" }}>СЕЙЧАС</span>
+        </h2>
+        <p className="font-mono text-sm mb-8 mx-auto" style={{ color: "#666", maxWidth: "400px" }}>
+          Отвечаем быстро. Передача ресурсов без задержек.
+        </p>
+        <a href={TG_LINK} target="_blank" rel="noreferrer"
+          className="tg-btn inline-flex items-center gap-3 px-10 py-4 rounded-sm text-sm">
+          <Icon name="Send" size={18} />
+          <span>Открыть Telegram</span>
+        </a>
       </section>
     </div>
   );
 }
 
-function CatalogPage({ onAddToCart }: { onAddToCart: (item: typeof CATALOG_ITEMS[0]) => void }) {
-  const [filter, setFilter] = useState("Все");
-  const filters = ["Все", "Розы", "Тропические", "Премиум", "Хиты"];
-
+/* ============ CATALOG PAGE ============ */
+function CatalogPage({ onBuy }: { onBuy: (name: string, price: number) => void }) {
   return (
-    <div className="max-w-7xl mx-auto px-6 py-16">
-      <div className="mb-12">
-        <div className="tag mb-3">Каталог</div>
-        <h1 className="font-cormorant mb-8" style={{ fontSize: "clamp(3rem, 7vw, 7rem)", fontWeight: 300, lineHeight: 1 }}>
-          Все букеты
-        </h1>
-        <div className="flex flex-wrap gap-3">
-          {filters.map(f => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className="px-5 py-2 rounded-sm text-sm font-golos font-semibold uppercase tracking-widest transition-all"
-              style={filter === f
-                ? { backgroundColor: "#B5F43C", color: "#0A0A0A" }
-                : { border: "1px solid #333", color: "#888" }
-              }
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="max-w-6xl mx-auto px-5 py-16">
+      <div className="tag mb-2">Ассортимент</div>
+      <h1 className="font-oswald font-bold mb-3" style={{ fontSize: "clamp(2.5rem, 7vw, 6rem)" }}>
+        ВСЕ ТОВАРЫ
+      </h1>
+      <p className="font-mono text-sm mb-12" style={{ color: "#666" }}>
+        Оплата через СберБанк — реквизиты в Telegram после подтверждения заказа
+      </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {CATALOG_ITEMS.map((item, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {PRODUCTS.map((item, i) => (
           <div
             key={item.id}
-            className="card-hover rounded-sm overflow-hidden animate-fade-up opacity-0"
-            style={{ backgroundColor: "#111111", animationDelay: `${i * 0.1}s`, animationFillMode: "forwards" }}
+            className="card-hover rounded-sm overflow-hidden animate-fade-up opacity-0 flex"
+            style={{ backgroundColor: "#111", border: "1px solid #1A1A1A", animationDelay: `${i * 0.1}s`, animationFillMode: "forwards" }}
           >
-            <div className="relative overflow-hidden" style={{ height: "300px" }}>
-              <img src={item.img} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 hover:scale-110" />
-              {item.tag && (
-                <span className="absolute top-4 left-4 px-3 py-1 rounded-sm text-xs font-golos font-bold uppercase tracking-widest" style={{ backgroundColor: "#B5F43C", color: "#0A0A0A" }}>
-                  {item.tag}
+            <div className="relative flex-shrink-0" style={{ width: "160px", height: "160px" }}>
+              <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
+              <div className="absolute inset-0" style={{ background: "linear-gradient(to right, transparent 60%, #111 100%)" }} />
+              {item.badge && (
+                <span className="absolute top-3 left-3 px-2 py-0.5 rounded-sm text-xs font-oswald font-bold tracking-widest uppercase"
+                  style={{ backgroundColor: item.badgeColor, color: "#fff" }}>
+                  {item.badge}
                 </span>
               )}
             </div>
-            <div className="p-6">
-              <div className="font-golos text-xs mb-1" style={{ color: "#666" }}>{item.desc}</div>
-              <h3 className="font-cormorant text-2xl font-semibold mb-4">{item.name}</h3>
-              <div className="flex items-center justify-between">
-                <span className="font-cormorant text-3xl font-bold" style={{ color: "#B5F43C" }}>{item.price.toLocaleString()} ₽</span>
-                <button onClick={() => onAddToCart(item)} className="btn-lime px-5 py-2 rounded-sm text-sm font-golos font-bold">
-                  В корзину
+            <div className="p-5 flex flex-col justify-between flex-1">
+              <div>
+                <div className="tag text-xs mb-1">{item.tag}</div>
+                <h3 className="font-oswald text-2xl font-bold uppercase mb-1">
+                  {item.emoji} {item.name}
+                </h3>
+                <p className="font-mono text-xs leading-relaxed" style={{ color: "#666" }}>{item.desc}</p>
+              </div>
+              <div className="flex items-center justify-between mt-4">
+                <span className="font-oswald text-2xl font-bold" style={{ color: "#F97316" }}>{item.price.toLocaleString()} ₽</span>
+                <button onClick={() => onBuy(item.name, item.price)} className="tg-btn px-5 py-2 rounded-sm text-xs flex items-center gap-2">
+                  <Icon name="Send" size={13} />
+                  <span>Купить</span>
                 </button>
               </div>
             </div>
           </div>
         ))}
       </div>
-    </div>
-  );
-}
 
-function AboutPage() {
-  const s1 = useInView();
-  const s2 = useInView();
-
-  return (
-    <div>
-      <div className="relative h-64 md:h-96 overflow-hidden">
-        <img src={IMG_TROPICAL} alt="About hero" className="w-full h-full object-cover opacity-50" />
-        <div className="absolute inset-0 flex items-end px-8 pb-12" style={{ background: "linear-gradient(to top, #0A0A0A 30%, transparent)" }}>
+      {/* Payment info */}
+      <div className="mt-10 p-6 rounded-sm" style={{ backgroundColor: "#0F0F0F", border: "1px solid #1F1F1F" }}>
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 rounded-sm flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#1A3C1A" }}>
+            <Icon name="ShieldCheck" size={20} style={{ color: "#22C55E" }} />
+          </div>
           <div>
-            <div className="tag mb-2">О магазине</div>
-            <h1 className="font-cormorant" style={{ fontSize: "clamp(3rem, 8vw, 7rem)", fontWeight: 300, lineHeight: 1 }}>
-              Наша история
-            </h1>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-20 mb-20">
-          <div ref={s1.ref} className={`opacity-0 ${s1.inView ? "animate-fade-up" : ""}`} style={{ animationFillMode: "forwards" }}>
-            <h2 className="font-cormorant text-5xl font-light mb-6" style={{ lineHeight: 1.1 }}>
-              Мы создаём<br /><em style={{ color: "#B5F43C", fontStyle: "italic" }}>эмоции</em>
-            </h2>
-            <p className="font-golos text-base leading-relaxed mb-4" style={{ color: "#888" }}>
-              BLOOM — это больше, чем цветочный магазин. Мы верим, что каждый букет несёт в себе историю, чувство и момент. С 2019 года мы создаём авторские флористические композиции, которые говорят вместо слов.
-            </p>
-            <p className="font-golos text-base leading-relaxed" style={{ color: "#888" }}>
-              Наши флористы работают только со свежими цветами от проверенных поставщиков — от местных оранжерей до экзотических плантаций Эквадора и Нидерландов.
-            </p>
-          </div>
-          <div ref={s2.ref} className={`opacity-0 ${s2.inView ? "animate-fade-up" : ""}`} style={{ animationFillMode: "forwards", animationDelay: "0.2s" }}>
-            <img src={IMG_MAGNOLIA} alt="About" className="w-full h-72 object-cover rounded-sm" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[["2019", "Год основания"], ["10 000+", "Счастливых клиентов"], ["500+", "Сортов цветов"], ["15", "Флористов в команде"]].map(([num, label]) => (
-            <div key={num} className="p-8 rounded-sm text-center" style={{ backgroundColor: "#111" }}>
-              <div className="font-cormorant text-4xl md:text-5xl font-bold mb-2" style={{ color: "#B5F43C" }}>{num}</div>
-              <div className="font-golos text-sm uppercase tracking-widest" style={{ color: "#666" }}>{label}</div>
+            <div className="font-oswald font-bold text-base uppercase tracking-wider mb-1" style={{ color: "#22C55E" }}>
+              Оплата через СберБанк
             </div>
-          ))}
+            <p className="font-mono text-xs leading-relaxed" style={{ color: "#666" }}>
+              После оформления заказа в Telegram мы пришлём номер карты СберБанк для перевода.
+              Передача ресурсов в течение 5–30 минут после подтверждения оплаты.
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function CartPage({ cart, total, onRemove, onUpdateQty, onNav }: {
-  cart: CartItem[];
-  total: number;
-  onRemove: (id: number) => void;
-  onUpdateQty: (id: number, delta: number) => void;
-  onNav: (p: Page) => void;
-}) {
-  return (
-    <div className="max-w-4xl mx-auto px-6 py-16">
-      <div className="tag mb-3">Корзина</div>
-      <h1 className="font-cormorant mb-10" style={{ fontSize: "clamp(3rem, 6vw, 6rem)", fontWeight: 300, lineHeight: 1 }}>
-        Ваш заказ
-      </h1>
-
-      {cart.length === 0 ? (
-        <div className="text-center py-24">
-          <div className="mb-6 opacity-20 flex justify-center">
-            <Icon name="ShoppingBag" size={64} />
-          </div>
-          <p className="font-cormorant text-3xl mb-6" style={{ color: "#666" }}>Корзина пуста</p>
-          <button onClick={() => onNav("catalog")} className="btn-lime px-8 py-4 rounded-sm text-sm font-golos font-bold uppercase tracking-widest">
-            Перейти в каталог
-          </button>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4 mb-10">
-          {cart.map(item => (
-            <div key={item.id} className="flex items-center gap-6 p-4 rounded-sm" style={{ backgroundColor: "#111" }}>
-              <img src={item.img} alt={item.name} className="w-20 h-20 object-cover rounded-sm flex-shrink-0" />
-              <div className="flex-1">
-                <h3 className="font-cormorant text-2xl font-semibold mb-1">{item.name}</h3>
-                <div className="font-cormorant text-xl" style={{ color: "#B5F43C" }}>{item.price.toLocaleString()} ₽</div>
-              </div>
-              <div className="flex items-center gap-3">
-                <button onClick={() => onUpdateQty(item.id, -1)} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ border: "1px solid #333", color: "#888" }}>
-                  <Icon name="Minus" size={14} />
-                </button>
-                <span className="font-golos font-bold w-6 text-center">{item.qty}</span>
-                <button onClick={() => onUpdateQty(item.id, 1)} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ border: "1px solid #333", color: "#888" }}>
-                  <Icon name="Plus" size={14} />
-                </button>
-              </div>
-              <div className="font-cormorant text-xl font-bold" style={{ color: "#F5F5F0", minWidth: "100px", textAlign: "right" }}>
-                {(item.price * item.qty).toLocaleString()} ₽
-              </div>
-              <button onClick={() => onRemove(item.id)} className="transition-colors" style={{ color: "#555" }}>
-                <Icon name="X" size={18} />
-              </button>
-            </div>
-          ))}
-
-          <div className="mt-6 p-6 rounded-sm" style={{ backgroundColor: "#111", borderTop: "2px solid #B5F43C" }}>
-            <div className="flex items-center justify-between mb-6">
-              <span className="font-golos text-lg" style={{ color: "#888" }}>Итого</span>
-              <span className="font-cormorant text-4xl font-bold" style={{ color: "#B5F43C" }}>{total.toLocaleString()} ₽</span>
-            </div>
-            <button className="w-full btn-lime py-4 rounded-sm text-sm font-golos font-bold uppercase tracking-widest">
-              Оформить заказ
-            </button>
-            <p className="font-golos text-xs text-center mt-3" style={{ color: "#555" }}>
-              Нажимая «Оформить заказ», вы переходите к оплате
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ContactsPage({ form, setForm, submitted, setSubmitted }: {
-  form: { name: string; phone: string; message: string };
-  setForm: (f: { name: string; phone: string; message: string }) => void;
-  submitted: boolean;
-  setSubmitted: (v: boolean) => void;
-}) {
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
-
-  return (
-    <div className="max-w-7xl mx-auto px-6 py-16">
-      <div className="tag mb-3">Связаться</div>
-      <h1 className="font-cormorant mb-16" style={{ fontSize: "clamp(3rem, 7vw, 7rem)", fontWeight: 300, lineHeight: 1 }}>
-        Контакты
-      </h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
-        <div>
-          <div className="flex flex-col gap-8 mb-12">
-            {[
-              { icon: "Phone", label: "Телефон", value: "+7 (999) 000-00-00" },
-              { icon: "Mail", label: "Email", value: "hello@bloom-shop.ru" },
-              { icon: "MapPin", label: "Адрес", value: "Москва, ул. Цветочная, 1" },
-              { icon: "Clock", label: "Режим работы", value: "Пн–Вс: 8:00 – 22:00" },
-            ].map(({ icon, label, value }) => (
-              <div key={label} className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-sm flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#B5F43C" }}>
-                  <Icon name={icon as "Phone"} size={18} style={{ color: "#0A0A0A" }} />
-                </div>
-                <div>
-                  <div className="tag mb-1">{label}</div>
-                  <div className="font-golos text-lg">{value}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="p-6 rounded-sm" style={{ backgroundColor: "#111" }}>
-            <div className="tag mb-3">Мессенджеры</div>
-            <p className="font-golos text-sm mb-4" style={{ color: "#888" }}>Пишите в Telegram или WhatsApp — ответим быстро!</p>
-            <div className="flex gap-3">
-              <button className="flex-1 py-3 rounded-sm font-golos font-semibold text-sm uppercase tracking-widest btn-lime">
-                Telegram
-              </button>
-              <button className="flex-1 py-3 rounded-sm font-golos font-semibold text-sm uppercase tracking-widest btn-outline-lime">
-                WhatsApp
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          {submitted ? (
-            <div className="text-center py-16">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: "#B5F43C" }}>
-                <Icon name="Check" size={28} style={{ color: "#0A0A0A" }} />
-              </div>
-              <h2 className="font-cormorant text-4xl mb-3">Заявка отправлена!</h2>
-              <p className="font-golos" style={{ color: "#888" }}>Мы свяжемся с вами в течение 30 минут</p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-              <div className="tag mb-2">Напишите нам</div>
-              {[
-                { name: "name", placeholder: "Ваше имя", type: "text" },
-                { name: "phone", placeholder: "Телефон", type: "tel" },
-              ].map(({ name, placeholder, type }) => (
-                <input
-                  key={name}
-                  type={type}
-                  placeholder={placeholder}
-                  value={form[name as "name" | "phone"]}
-                  onChange={e => setForm({ ...form, [name]: e.target.value })}
-                  required
-                  className="w-full px-5 py-4 rounded-sm font-golos text-sm outline-none transition-all"
-                  style={{ backgroundColor: "#111", border: "1px solid #222", color: "#F5F5F0" }}
-                  onFocus={e => (e.target.style.borderColor = "#B5F43C")}
-                  onBlur={e => (e.target.style.borderColor = "#222")}
-                />
-              ))}
-              <textarea
-                placeholder="Ваше сообщение или пожелания к букету"
-                value={form.message}
-                onChange={e => setForm({ ...form, message: e.target.value })}
-                rows={5}
-                className="w-full px-5 py-4 rounded-sm font-golos text-sm outline-none transition-all resize-none"
-                style={{ backgroundColor: "#111", border: "1px solid #222", color: "#F5F5F0" }}
-                onFocus={e => (e.target.style.borderColor = "#B5F43C")}
-                onBlur={e => (e.target.style.borderColor = "#222")}
-              />
-              <button type="submit" className="btn-lime py-4 rounded-sm text-sm font-golos font-bold uppercase tracking-widest">
-                Отправить заявку
-              </button>
-            </form>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
+/* ============ FAQ PAGE ============ */
 function FaqPage({ openFaq, setOpenFaq }: { openFaq: number | null; setOpenFaq: (i: number | null) => void }) {
   return (
-    <div className="max-w-3xl mx-auto px-6 py-16">
-      <div className="tag mb-3">Вопросы и ответы</div>
-      <h1 className="font-cormorant mb-16" style={{ fontSize: "clamp(3rem, 7vw, 7rem)", fontWeight: 300, lineHeight: 1 }}>
+    <div className="max-w-3xl mx-auto px-5 py-16">
+      <div className="tag mb-2">Помощь</div>
+      <h1 className="font-oswald font-bold mb-12" style={{ fontSize: "clamp(3rem, 7vw, 6rem)" }}>
         FAQ
       </h1>
 
       <div className="flex flex-col gap-3">
         {FAQ_ITEMS.map((item, i) => (
-          <div
-            key={i}
-            className="rounded-sm overflow-hidden"
-            style={{ backgroundColor: "#111", border: openFaq === i ? "1px solid #B5F43C" : "1px solid #1A1A1A" }}
-          >
+          <div key={i} className="rounded-sm overflow-hidden"
+            style={{ backgroundColor: "#111", border: openFaq === i ? "1px solid #F97316" : "1px solid #1A1A1A" }}>
             <button
               onClick={() => setOpenFaq(openFaq === i ? null : i)}
-              className="w-full flex items-center justify-between px-6 py-5 text-left"
+              className="w-full flex items-center justify-between px-5 py-4 text-left"
             >
-              <span className="font-golos font-semibold text-base pr-4">{item.q}</span>
-              <Icon
-                name={openFaq === i ? "ChevronUp" : "ChevronDown"}
-                size={20}
-                style={{ color: openFaq === i ? "#B5F43C" : "#666", flexShrink: 0 }}
-              />
+              <span className="font-oswald font-semibold text-base pr-4 uppercase tracking-wide">{item.q}</span>
+              <Icon name={openFaq === i ? "ChevronUp" : "ChevronDown"} size={18}
+                style={{ color: openFaq === i ? "#F97316" : "#555", flexShrink: 0 }} />
             </button>
             {openFaq === i && (
-              <div className="px-6 pb-5 animate-fade-in">
-                <p className="font-golos text-sm leading-relaxed" style={{ color: "#888" }}>{item.a}</p>
+              <div className="px-5 pb-4 animate-fade-in">
+                <p className="font-mono text-sm leading-relaxed" style={{ color: "#888" }}>{item.a}</p>
               </div>
             )}
           </div>
         ))}
       </div>
 
-      <div className="mt-16 p-8 rounded-sm text-center" style={{ backgroundColor: "#111", border: "1px solid #1A1A1A" }}>
-        <div className="font-cormorant text-3xl mb-3">Не нашли ответ?</div>
-        <p className="font-golos text-sm mb-6" style={{ color: "#888" }}>Напишите нам — поможем с любым вопросом!</p>
-        <div className="flex gap-4 justify-center">
-          <button className="btn-lime px-6 py-3 rounded-sm text-sm font-golos font-bold uppercase tracking-widest">
-            Telegram
-          </button>
-          <button className="btn-outline-lime px-6 py-3 rounded-sm text-sm font-golos font-bold uppercase tracking-widest">
-            Написать на email
-          </button>
+      <div className="mt-12 p-6 rounded-sm text-center" style={{ backgroundColor: "#111", border: "1px solid #1A1A1A" }}>
+        <div className="font-oswald text-2xl font-bold uppercase mb-2">Остались вопросы?</div>
+        <p className="font-mono text-xs mb-5" style={{ color: "#666" }}>Напишите напрямую — ответим моментально</p>
+        <a href={TG_LINK} target="_blank" rel="noreferrer"
+          className="tg-btn inline-flex items-center gap-2 px-7 py-3 rounded-sm text-sm">
+          <Icon name="Send" size={16} />
+          <span>Написать @fuckktokyo</span>
+        </a>
+      </div>
+    </div>
+  );
+}
+
+/* ============ CONTACTS PAGE ============ */
+function ContactsPage() {
+  return (
+    <div className="max-w-4xl mx-auto px-5 py-16">
+      <div className="tag mb-2">Связь</div>
+      <h1 className="font-oswald font-bold mb-12" style={{ fontSize: "clamp(3rem, 7vw, 6rem)" }}>
+        КОНТАКТЫ
+      </h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="flex flex-col gap-5">
+          <div className="p-6 rounded-sm" style={{ backgroundColor: "#111", border: "1px solid #1A1A1A" }}>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-sm flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, #2AABEE, #229ED9)" }}>
+                <Icon name="Send" size={22} style={{ color: "#fff" }} />
+              </div>
+              <div>
+                <div className="tag mb-0.5">Основной канал</div>
+                <div className="font-oswald text-xl font-bold uppercase">Telegram</div>
+              </div>
+            </div>
+            <p className="font-mono text-sm mb-4" style={{ color: "#666" }}>
+              Пишите напрямую. Отвечаем быстро, работаем без выходных.
+            </p>
+            <a href={TG_LINK} target="_blank" rel="noreferrer"
+              className="tg-btn flex items-center justify-center gap-2 py-3 rounded-sm text-sm w-full">
+              <Icon name="Send" size={16} />
+              <span>@fuckktokyo</span>
+            </a>
+          </div>
+
+          <div className="p-6 rounded-sm" style={{ backgroundColor: "#111", border: "1px solid #1A1A1A" }}>
+            <div className="flex items-center gap-4 mb-3">
+              <div className="w-12 h-12 rounded-sm flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#1A3C1A" }}>
+                <Icon name="CreditCard" size={22} style={{ color: "#22C55E" }} />
+              </div>
+              <div>
+                <div className="tag mb-0.5" style={{ color: "#22C55E" }}>Оплата</div>
+                <div className="font-oswald text-xl font-bold uppercase">СберБанк</div>
+              </div>
+            </div>
+            <p className="font-mono text-sm" style={{ color: "#666" }}>
+              Принимаем оплату переводом на карту СберБанк.<br />
+              Реквизиты отправляем в Telegram после подтверждения заказа.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-5">
+          <div className="p-6 rounded-sm h-full" style={{ backgroundColor: "#0F0F0F", border: "1px solid #1A1A1A" }}>
+            <div className="tag mb-3">Время работы</div>
+            <div className="flex flex-col gap-3 mb-6">
+              {[["Режим", "Ежедневно"], ["Часы", "10:00 – 23:00"], ["Ответ в TG", "5–15 минут"], ["Передача", "5–30 минут"]].map(([key, val]) => (
+                <div key={key} className="flex justify-between items-center py-2" style={{ borderBottom: "1px solid #1A1A1A" }}>
+                  <span className="font-mono text-xs uppercase tracking-widest" style={{ color: "#555" }}>{key}</span>
+                  <span className="font-oswald font-semibold text-sm uppercase" style={{ color: "#E8DDD0" }}>{val}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-4 rounded-sm" style={{ backgroundColor: "#0D0D0D", border: "1px solid #1F1F1F" }}>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: "#22C55E", boxShadow: "0 0 6px #22C55E" }} />
+                <span className="font-oswald text-sm font-bold uppercase tracking-widest" style={{ color: "#22C55E" }}>Онлайн</span>
+              </div>
+              <p className="font-mono text-xs" style={{ color: "#555" }}>Готов принять заказ прямо сейчас</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

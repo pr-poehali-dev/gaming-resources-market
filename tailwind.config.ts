@@ -19,8 +19,8 @@ export default {
 			}
 		},
 		fontFamily: {
-			cormorant: ['Cormorant', 'serif'],
-			golos: ['Golos Text', 'sans-serif'],
+			oswald: ['Oswald', 'sans-serif'],
+			mono: ['Roboto Mono', 'monospace'],
 		},
 		extend: {
 			colors: {
